@@ -1,0 +1,47 @@
+version: "3"
+services:
+
+  docker:
+    image: docker:dind
+    container_name: jenkins-docker
+    privileged: true
+    command: --storage-driver=overlay2
+    environment:
+      - DOCKER_TLS_CERTDIR=/certs
+    volumes:
+      - jenkins-docker-certs:/certs/client
+    ports:
+      - "2376:2376"
+    networks:
+      - net
+
+  jenkins:
+    image: jenkins/jenkins:lts-jdk17
+    container_name: jenkins-blueocean
+    user: root
+    privileged: true
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    environment:
+      - DOCKER_HOST=tcp://docker:2376
+      - DOCKER_CERT_PATH=/certs/client
+      - DOCKER_TLS_VERIFY=1
+    volumes:
+      - jenkins_data:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - jenkins-docker-certs:/certs/client:ro
+    networks:
+      - net
+    command: >
+      bash -c "
+      jenkins-plugin-cli --plugins blueocean docker-workflow &&
+      /usr/bin/tini -- /usr/local/bin/jenkins.sh
+      "
+
+networks:
+  net:
+
+volumes:
+  jenkins_data:
+  jenkins-docker-certs:
