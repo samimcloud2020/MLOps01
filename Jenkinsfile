@@ -51,13 +51,19 @@ pipeline {
     }
         stage('Trivy FS Scan') {
             steps {
-                // Trivy Filesystem Scan
                 script {
-                    echo 'Scannning Filesystem with Trivy...'
-                    sh "trivy fs ./ --format table -o trivy-fs-report.html"
+                    echo 'Scanning Filesystem with Trivy...'
+                    sh "trivy fs ./ --severity HIGH,CRITICAL --exit-code 0 --format table -o trivy-fs-report.html"
+                }
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: 'trivy-fs-report.html', allowEmptyArchive: true
                 }
             }
         }
+
+        
         stage('Build Docker Image') {
             steps {
                 // Build Docker Image
