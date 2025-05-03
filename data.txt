@@ -6,3 +6,4 @@ sudo docker run -d --name my-running-app -p 8080:8080 jenkins
 sudo docker logs 6ad7b36b172d
 
   
+$ docker run -it -p 8080:8080 jenkins/jenkins:lts
