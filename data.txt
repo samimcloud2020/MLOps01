@@ -1,0 +1,8 @@
+ubuntu@ip-172-31-89-117:~/MLOps01/custom_jenkins$ sudo docker exec -it 6ad7b36b172d bash
+jenkins@6ad7b36b172d:/$ cat /var/jenkins_home/secrets/initialAdminPassword
+  
+sudo docker build -t jenkins  .
+sudo docker run -d --name my-running-app -p 8080:8080 jenkins
+sudo docker logs 6ad7b36b172d
+
+  
