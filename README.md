@@ -30,3 +30,12 @@ Prevent shipping insecure apps.
 Automate security checks before deployment.
 
 ***********************************************************************************************
+Use Cases for pytest
+**********************************************************************************************
+Unit testing	Test small units of code (e.g., functions, methods) in isolation.
+Integration testing	Test how components interact (e.g., API + database).
+Regression testing	Ensure that code changes don’t break existing features.
+Test automation in CI/CD	Run tests automatically in pipelines like Jenkins, GitHub Actions, etc.
+Fixtures & mocking	Manage setup/teardown logic for tests (e.g., database connection, test client).
+
+******************************************************************************************************
