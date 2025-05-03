@@ -32,10 +32,17 @@ pipeline {
                 // Pytest code
                 script {
                     echo 'Testing Python Code...'
-                    sh "pytest tests/"
+                    #sh "pytest tests/"
+                    sh "pytest --junitxml=pytest-report.xml tests/"
                 }
             }
+            post {
+                always {
+                    junit 'pytest-report.xml'
+                    archiveArtifacts artifacts: 'pytest-report.xml', allowEmptyArchive: true
+            }
         }
+    }
         stage('Trivy FS Scan') {
             steps {
                 // Trivy Filesystem Scan
