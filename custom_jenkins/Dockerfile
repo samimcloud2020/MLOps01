@@ -1,50 +1,41 @@
 FROM jenkins/jenkins:lts
 
+# Switch to root for installing system dependencies
 USER root
 
-# Install Docker CLI
-RUN apt-get update -y && \
-    apt-get install -y \
-    apt-transport-https \
-    ca-certificates \
-    curl \
-    gnupg2 \
-    lsb-release \
-    software-properties-common && \
-    curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - && \
-    echo "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable" \
-    > /etc/apt/sources.list.d/docker.list && \
-    apt-get update -y && \
-    apt-get install -y docker-ce-cli
+# Add Debian Bullseye repository for openjdk-11-jdk
+RUN echo "deb http://deb.debian.org/debian bullseye main" > /etc/apt/sources.list.d/bullseye.list
 
-# Install other dependencies
-RUN apt-get install -y \
-    unzip \
-    groff \
-    less \
-    python3 \
-    sudo \
-    wget && \
-    rm -rf /var/lib/apt/lists/*
+# Install required system packages, including dependencies for Ansible
+RUN apt-get update && \
+    apt-get install -y lsb-release openjdk-11-jdk unzip python3-pip python3-dev libffi-dev libssl-dev python3-venv && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /etc/apt/sources.list.d/bullseye.list
 
-# Install AWS CLI v2
+# Create a virtual environment and install Ansible
+RUN python3 --version && \
+    python3 -m venv /opt/ansible && \
+    /opt/ansible/bin/pip install --no-cache-dir --upgrade pip && \
+    /opt/ansible/bin/pip install --no-cache-dir ansible
+
+# Install AWS CLI
 RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
     unzip awscliv2.zip && \
     ./aws/install && \
     rm -rf awscliv2.zip aws
 
-# Install Trivy
-RUN mkdir -p /usr/share/keyrings && \
-    wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --dearmor -o /usr/share/keyrings/trivy.gpg && \
-    echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -cs) main" \
-    > /etc/apt/sources.list.d/trivy.list && \
-    apt-get update && apt-get install -y trivy && \
+# Install Docker CLI
+RUN curl -fsSLo /usr/share/keyrings/docker-archive-keyring.asc \
+    https://download.docker.com/linux/debian/gpg && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.asc] \
+    https://download.docker.com/linux/debian $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list && \
+    apt-get update && \
+    apt-get install -y docker-ce-cli && \
+    apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# ✅ Fix: Create docker group manually before adding user
-RUN groupadd docker && usermod -aG docker jenkins
+# Switch back to the Jenkins user
+USER jenkins
 
-# Optional: Enable DinD
-RUN mkdir -p /var/lib/docker
-VOLUME /var/lib/docker
-
+# Install Jenkins plugins
+RUN jenkins-plugin-cli --plugins blueocean docker-workflow
