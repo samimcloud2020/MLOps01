@@ -17,16 +17,22 @@ pipeline {
         }
         stage('Lint Code') {
             steps {
-                // Lint code
                 script {
                     echo 'Linting Python Code...'
-                    sh "python -m pip install --break-system-packages -r requirements.txt"
-                    sh "pylint app.py train.py --output=pylint-report.txt --exit-zero"
-                    sh "flake8 app.py train.py --ignore=E501,E302 --output-file=flake8-report.txt"
-                    sh "black app.py train.py"
+                    sh "python -m venv venv && source venv/bin/activate && pip install -r requirements.txt"
+                    sh "venv/bin/pylint app.py train.py --output=pylint-report.txt --exit-zero"
+                    sh "venv/bin/flake8 app.py train.py --ignore=E501,E302 --output-file=flake8-report.txt"
+                    sh "venv/bin/black app.py train.py"
+                }
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: '**/*lint-report.txt', allowEmptyArchive: true
                 }
             }
         }
+
+        
         stage('Test Code') {
             steps {
                 // Pytest code
