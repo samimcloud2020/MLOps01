@@ -38,7 +38,6 @@ pipeline {
                 // Pytest code
                 script {
                     echo 'Testing Python Code...'
-                    #sh "pytest tests/"
                     sh "pytest --junitxml=pytest-report.xml tests/"
                 }
             }
