@@ -15,27 +15,31 @@ pipeline {
                 }
             }
         }
-       stage('Lint Code') {
-            steps {
-                script {
-                    echo 'Linting Python Code...'
-                    sh '''
-                    # Install required system packages
-                    apt-get update && apt-get install -y python3-venv python3-pip
+      stage('Lint Code') {
+    steps {
+        script {
+            echo 'Linting Python Code...'
+            sh '''
+                # Clean broken sources
+                sed -i '/download.docker.com/d' /etc/apt/sources.list /etc/apt/sources.list.d/*.list || true
 
-                    # Create and activate virtual environment
-                    python3 -m venv venv
-                    . venv/bin/activate
+                # Update and install required packages
+                apt-get update
+                apt-get install -y python3.11-venv python3-pip
 
-                    # Install Python dependencies
-                    pip install --upgrade pip
-                    pip install -r requirements.txt pylint flake8 black
+                # Setup virtual environment
+                python3 -m venv venv
+                . venv/bin/activate
 
-                    # Run linting tools
-                    pylint app.py train.py --output=pylint-report.txt --exit-zero
-                    flake8 app.py train.py --ignore=E501,E302 --output-file=flake8-report.txt
-                    black app.py train.py
-                '''
+                # Install linting tools
+                pip install --upgrade pip
+                pip install -r requirements.txt pylint flake8 black
+
+                # Run linters
+                pylint app.py train.py --output=pylint-report.txt --exit-zero
+                flake8 app.py train.py --ignore=E501,E302 --output-file=flake8-report.txt
+                black app.py train.py
+            '''
         }
     }
     post {
@@ -44,6 +48,7 @@ pipeline {
         }
     }
 }
+
 
 
         
