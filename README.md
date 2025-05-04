@@ -1,4 +1,4 @@
-# MLOps01
+# MLOps01  https://www.youtube.com/watch?v=MwmuwhwzGTk&t=4702s
 
 Use pylint for logic and bug detection.
 
