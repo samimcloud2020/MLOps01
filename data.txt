@@ -51,5 +51,5 @@ pip install --upgrade pip
 pip install -r /home/ubuntu/MLOps01/requirements.txt
 
 
-
+docker run -d -p 80:5000 --name mlops-app image1 <-----container expose: 5000, outside world: 80
 
