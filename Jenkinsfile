@@ -50,23 +50,31 @@ pipeline {
 }
 
 
+stage('Test Code') {
+    steps {
+        script {
+            echo 'Testing Python Code...'
+            sh '''
+                # Activate virtual environment if not already
+                . venv/bin/activate
 
-        
-        stage('Test Code') {
-            steps {
-                // Pytest code
-                script {
-                    echo 'Testing Python Code...'
-                    sh "pytest --junitxml=pytest-report.xml tests/"
-                }
-            }
-            post {
-                always {
-                    junit 'pytest-report.xml'
-                    archiveArtifacts artifacts: 'pytest-report.xml', allowEmptyArchive: true
-            }
+                # Ensure pytest is installed
+                pip install pytest
+
+                # Run tests and generate report
+                pytest --junitxml=pytest-report.xml tests/
+            '''
         }
     }
+    post {
+        always {
+            junit 'pytest-report.xml'
+        }
+    }
+}
+
+        
+       
         stage('Trivy FS Scan') {
             steps {
                 script {
