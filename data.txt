@@ -1,3 +1,5 @@
+# https://www.youtube.com/watch?v=MwmuwhwzGTk&t=4702s
+
 ubuntu@ip-172-31-89-117:~/MLOps01/custom_jenkins$ sudo docker exec -it 6ad7b36b172d bash
 jenkins@6ad7b36b172d:/$ cat /var/jenkins_home/secrets/initialAdminPassword
   
