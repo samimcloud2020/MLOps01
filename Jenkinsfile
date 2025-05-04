@@ -6,13 +6,15 @@ pipeline {
         DOCKERHUB_REGISTRY = 'https://registry.hub.docker.com'
         DOCKERHUB_REPOSITORY = 'samimbsnl/mlops'
         VENV_PATH = 'venv'
+        DOCKER_IMAGE_TAG = 'latest'
     }
 
     stages {
+
         stage('Clone Repository') {
             steps {
                 script {
-                    echo 'Cloning GitHub Repository...'
+                    echo '📥 Cloning GitHub Repository...'
                     checkout scmGit(
                         branches: [[name: '*/main']],
                         userRemoteConfigs: [[
@@ -27,7 +29,7 @@ pipeline {
         stage('Setup Python Environment') {
             steps {
                 script {
-                    echo 'Setting up Python virtual environment...'
+                    echo '🐍 Setting up Python environment...'
                     sh '''
                         apt-get update
                         apt-get install -y python3.11-venv python3-pip
@@ -43,7 +45,7 @@ pipeline {
         stage('Lint Code') {
             steps {
                 script {
-                    echo 'Running linters...'
+                    echo '🔍 Running linters...'
                     sh '''
                         . ${VENV_PATH}/bin/activate
                         pylint app.py train.py --output=pylint-report.txt --exit-zero
@@ -62,7 +64,7 @@ pipeline {
         stage('Test Code') {
             steps {
                 script {
-                    echo 'Running pytest...'
+                    echo '🧪 Running unit tests...'
                     sh '''
                         . ${VENV_PATH}/bin/activate
                         pytest --junitxml=pytest-report.xml tests/
@@ -79,7 +81,7 @@ pipeline {
         stage('Trivy FS Scan') {
             steps {
                 script {
-                    echo 'Scanning local files with Trivy...'
+                    echo '🛡️ Scanning local project files with Trivy...'
                     sh '''
                         trivy fs ./ \
                           --severity HIGH,CRITICAL \
@@ -99,16 +101,18 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    echo 'Building Docker image...'
+                    echo '🐳 Building Docker image...'
                     sh '''
                         if ! command -v docker >/dev/null; then
-                            echo "ERROR: Docker not installed in Jenkins environment."
+                            echo "❌ Docker not installed in Jenkins."
                             exit 1
                         fi
+                        echo "🧱 Validating Dockerfile..."
+                        test -f Dockerfile || (echo "❌ Dockerfile not found!" && exit 1)
+
+                        echo "🚀 Building Docker image..."
+                        docker build -t ${DOCKERHUB_REPOSITORY}:${DOCKER_IMAGE_TAG} .
                     '''
-                    script {
-                        dockerImage = docker.build("${DOCKERHUB_REPOSITORY}:latest")
-                    }
                 }
             }
         }
@@ -116,9 +120,9 @@ pipeline {
         stage('Trivy Docker Image Scan') {
             steps {
                 script {
-                    echo 'Scanning Docker image with Trivy...'
+                    echo '🔎 Scanning Docker image with Trivy...'
                     sh '''
-                        trivy image ${DOCKERHUB_REPOSITORY}:latest \
+                        trivy image ${DOCKERHUB_REPOSITORY}:${DOCKER_IMAGE_TAG} \
                           --format table \
                           -o trivy-image-report.html || true
                     '''
@@ -134,9 +138,9 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
-                    echo 'Pushing Docker image to DockerHub...'
+                    echo '📤 Pushing Docker image to DockerHub...'
                     docker.withRegistry("${DOCKERHUB_REGISTRY}", "${DOCKERHUB_CREDENTIAL_ID}") {
-                        dockerImage.push('latest')
+                        docker.image("${DOCKERHUB_REPOSITORY}:${DOCKER_IMAGE_TAG}").push()
                     }
                 }
             }
@@ -145,7 +149,7 @@ pipeline {
         stage('Deploy to ECS') {
             steps {
                 script {
-                    echo 'Deploying to Amazon ECS...'
+                    echo '🚀 Deploying to Amazon ECS...'
                     sh '''
                         aws ecs update-service \
                           --cluster iquant-ecs \
@@ -159,10 +163,10 @@ pipeline {
 
     post {
         failure {
-            echo "❌ Pipeline failed. Check above logs for details."
+            echo "❌ Pipeline failed. Please check the logs for more info."
         }
         success {
-            echo "✅ Pipeline completed successfully!"
+            echo "✅ Pipeline executed successfully."
         }
     }
 }
