@@ -31,3 +31,25 @@ policy attached:  AmazonECSTaskExecutionRolePolicy
 
 
 docker.io/samimbsnl/mlops:latest
+
+
+
+# Ensure python3-venv and pip are installed
+sudo apt update
+sudo apt install -y python3-pip python3-venv
+
+# Create a virtual environment in a writable location
+python3 -m venv ~/venv
+
+# Activate the virtual environment
+source ~/venv/bin/activate
+
+# Upgrade pip to latest
+pip install --upgrade pip
+
+# Now install your project requirements
+pip install -r /home/ubuntu/MLOps01/requirements.txt
+
+
+
+
