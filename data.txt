@@ -28,3 +28,6 @@ trusted:--
 
 
 policy attached:  AmazonECSTaskExecutionRolePolicy
+
+
+docker.io/samimbsnl/mlops:latest
