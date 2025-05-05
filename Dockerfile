@@ -23,6 +23,7 @@ COPY test_model.py test_model.py
 COPY Jenkinsfile-new Jenkinsfile-new
 COPY app.py app.py
 COPY train.py train.py
+COPY model/iris_model.pkl model/iris_model.pkl
 COPY model/iris_model.pkl iris_model.pkl
 COPY templates/index.html index.html
 
