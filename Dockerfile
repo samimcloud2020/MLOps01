@@ -1,6 +1,8 @@
 # Use a lightweight Python image
 FROM python:slim
 
+LABEL maintainer="Samim <samim@example.com>"
+
 # Set environment variables to prevent Python from writing .pyc files & Ensure Python output is not buffered
 # This reduces the docker image size further
 ENV PYTHONDONTWRITEBYTECODE=1 \
