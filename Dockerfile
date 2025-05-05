@@ -20,6 +20,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the application code
 COPY . .
+COPY templates/index.html index.html
 
 # Train the model before running the application
 RUN python train.py
