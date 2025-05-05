@@ -15,6 +15,7 @@ COPY requirements.txt requirements.txt
 # Install required packages but do not store cache files to reduce image size
 RUN pip install --no-cache-dir -r requirements.txt
 
+
 # Copy the application code
 COPY . .
 
